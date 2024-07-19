@@ -5,6 +5,8 @@ import Login from './components/Login';
 import { BrowserRouter as Router, Routes, Route,} from "react-router-dom";
 import Dashboard from './components/Dashboard';
 import Navbar from './components/Navbar';
+import AddDuty from './components/AddDuty';
+import AddSale from './components/AddSale';
 
 function App() {
 
@@ -22,10 +24,12 @@ function App() {
 
   return (
     <Router>
-      <Navbar/>
+      <Navbar />
       <Routes>
         <Route exact path='/' element={<Login />}></Route>
         <Route exact path='/dashboard' element={<Dashboard/>}></Route>
+        <Route exact path='/add_duty' element={<AddDuty/>}></Route>
+        <Route exact path='/add_sale' element={<AddSale/>} ></Route>
       </Routes>
     </Router>
   );

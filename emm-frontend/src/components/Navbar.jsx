@@ -1,6 +1,6 @@
 import React from 'react'
 
-function Navbar() {
+function Navbar({userId}) {
   return (
     <nav style={styling}>
         <li style={listItem}><a style={link} href="/dashboard">Dashboard</a></li>
@@ -27,5 +27,6 @@ const link = {
     color : 'white',
     textDecoration : 'none'
 }
+
 
 export default Navbar

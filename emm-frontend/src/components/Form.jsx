@@ -2,17 +2,11 @@ import axios from 'axios'
 import React, {useState} from 'react'
 
 function Form() {
-    // const [formData, setFormData] = useState({
-    //     username:"",
-    //     password:""
-    // })
+
     const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
     const [message, setMessage] = useState("Login")
-    // const handleChange = (e) => {
-    //     const {username, value} = e.target
-    //     setFormData({...formData,[username]:value})
-    // }
+
     const handleSubmit = async (e) => {
         e.preventDefault()
         try{
@@ -58,6 +52,7 @@ function readCookie(name){
 
 const styling = {
     fontSize: 30,
+    textAlign: 'center'
 }
 
 export default Form
