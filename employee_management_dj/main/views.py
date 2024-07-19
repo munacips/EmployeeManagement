@@ -1,13 +1,19 @@
-from .serializers import EmployeeSerializer, LeaveSerializer, NotificationSerializer
-from rest_framework.decorators import api_view
-from .models import Employee, EmployeeNotification, LeaveApplication, PersonalNotifications, Duty, Sale, DailyRecords, Report, Dummy
+from .serializers import EmployeeSerializer, LeaveSerializer, NotificationSerializer, LoginSerializer, ReportSerializer
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from .models import Employee, EmployeeNotification, LeaveApplication, PersonalNotifications, Duty, Sale, DailyRecords, Report ,Dummy
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import authenticate , login , logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
+from django.core.files import File
 import schedule
 import datetime
+from datetime import timedelta
+
+import json
 
 def checkLeaveDays():
     leaves = LeaveApplication.objects.all()
@@ -103,24 +109,131 @@ def leave_details(request,id):
         leave.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
-
+@api_view(['GET','POST'])
 def create_report(request,id):
-    employee = Employee.objects.get(id=id)
-    duties = Duty.objects.filter(employee=employee)
-    sales = Sale.objects.filter(employee=employee)
-    daily_records = DailyRecords.objects.filter(employee=employee)
-    new_report = Report.objects.get_or_create()
+    if request.method == 'GET':
+        employee = Employee.objects.get(id=id)
+        duties = Duty.objects.filter(employee=employee)
+        sales = Sale.objects.filter(employee=employee)
+        daily_records = DailyRecords.objects.filter(employee=employee)
+        new_report = Report.objects.get_or_create()
+        ## create the file here
+        return Response(status=status.HTTP_201_CREATED)
 
-def checkin(request,id):
-    login(request,id)
-    employee = Employee.objects.get(id=id)
-    record = DailyRecords.objects.get_or_create(employee=employee)
-    record.check_in_time = datetime.datetime.now()
-    record.save()
+@api_view(['POST'])
+def checkin(request):
+    if request.method == 'POST':
+        data = json.loads(request.body.decode('utf8').replace("'", '"'))
+        username = data["username"]
+        password = data["password"] 
+        try:
+            employee = Employee.objects.get(username=username)
+        except Employee.DoesNotExist:
+            print(username,password)
+            return Response(employee.id,status=status.HTTP_404_NOT_FOUND)
+        user = authenticate(request, username=username, password = password)
+        if user is not None:
+            login(request , user)
+            record, created = DailyRecords.objects.get_or_create(employee=employee,check_in_time = datetime.datetime.now())
+            return Response(status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+    elif request.method == 'GET':
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
-def checkout(request,id):
+@api_view(['POST'])
+def checkout(request):
+    data = json.loads(request.body.decode('utf8').replace("'", '"'))
+    print("the id is : ",data["id"])
+    id = data["id"]
     employee = Employee.objects.get(id=id)
-    record = DailyRecords.objects.get(employee=employee)
-    record.check_out_time = datetime.datetime.now()
+    records = DailyRecords.objects.filter(employee=employee)
+    print("the record : ",records)
+    record = records.last()
+    record.check_out_time = datetime.datetime.now().time()
+    employee.total_time += ( record.check_out_time - record.check_in_time)
     record.save()
     logout(request)
+    return Response(status.HTTP_204_NO_CONTENT)
+
+@api_view(['POST'])
+def add_duty(request):
+    data = json.loads(request.body.decode('utf8').replace("'", '"'))
+    role = data["role"]
+    description = data["description"]
+    userId = data["userId"]
+    print(data["userId"])
+    print('hi',data)
+    try:
+        employee = Employee.objects.get(id=userId)
+    except Employee.DoesNotExist:
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    new_duty, created = Duty.objects.get_or_create(employee=employee,role=role,description=description)
+    if created:
+        return Response(status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['POST'])
+def add_sale(request):
+    data = json.loads(request.body.decode('utf8').replace("'", '"'))
+    item = data["item"]
+    amount = data["amount"]
+    date = data["date"]
+    userId = data["userId"]
+    print(data["userId"])
+    print('hi',data)
+    try:
+        employee = Employee.objects.get(id=userId)
+    except Employee.DoesNotExist:
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    new_sale, created = Sale.objects.get_or_create(employee=employee,item=item,amount=amount,date=date)
+    if created:
+        return Response(status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['GET'])
+def user_info(request):
+    return Response(request.session.get('UserInfo'))
+
+@api_view(['POST'])
+def create_report(request):
+    data = json.loads(request.body.decode('utf8').replace("'", '"'))
+    id = data["id"]
+    date_from = data["date_from"]
+    date_to = data["date_to"]
+    employee = Employee.objects.get(id=id)
+    records = DailyRecords.objects.filter(employee=employee)
+    records = records.filter(date__range=[str(date_from),str(date_to)])
+    duties = Duty.objects.filter(employee=employee)
+    duties = duties.filter(date__range=[str(date_from),str(date_to)])
+    sales = Sale.objects.filter(employee=employee)
+    sales = sales.filter(date__range=[str(date_from),str(date_to)])
+    with open('file_{0}.txt'.format(datetime.datetime.now()),'w') as f:
+        f.write(f"Report for {employee.username}")
+        f.write(" ")
+        f.write("DUTIES DONE")
+        for duty in duties.iterator():
+            f.write(duty)
+            f.write("_____")
+        f.write("SALES DONE")
+        for sale in sales.iterator():
+            f.write(sale)
+        total_time = 0
+        # for record in records.iterator():
+        #     total_time += ()
+        # f.write("Total time at work: " + )
+        my_file = File(f)
+        new_report, created = Report.objects.get_or_create(employee=employee,file=my_file,date_from=date_from,date_to=date_to)
+        if created:
+            return Response(my_file,status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+@api_view(['GET'])   
+def reports(request):
+    reports = Report.objects.all()
+    serializer = ReportSerializer(reports,many=True)
+    return Response(serializer.data)
+    

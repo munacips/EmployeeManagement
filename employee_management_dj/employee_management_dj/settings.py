@@ -41,10 +41,20 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
-    'main'
+    'main',
+    'rest_framework.authtoken'
 ]
 
 CORS_ALLOWED_ORIGINS = ['http://localhost:3000']
+CORS_ALLOWED_CREDENTIALS = True
+CSRF_TRUSTED_ORIGINS = ['http://localhost:3000','http://127.0.0.1']
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES' : [
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication'
+    ]
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

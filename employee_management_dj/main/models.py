@@ -35,9 +35,10 @@ class Sale(models.Model):
     employee = models.ForeignKey(Employee,on_delete=models.DO_NOTHING)
     date = models.DateField()
     amount = models.DecimalField(max_digits=12,decimal_places=2)
+    item = models.CharField(max_length=100,default="Item")
 
     def __str__(self):
-        return str(self.date) + ' : ' + str(self.amount)
+        return str(self.item) + ' sold ' + str(self.amount)
 
 
 class Duty(models.Model):
@@ -63,9 +64,9 @@ class Report(models.Model):
 
 class DailyRecords(models.Model):
     employee = models.ForeignKey(Employee,on_delete=models.CASCADE)
-    date = models.DateField()
+    date = models.DateField(auto_now_add=True)
     check_in_time = models.TimeField(auto_now_add=True)
-    check_out_time = models.TimeField(null=True)
+    check_out_time = models.TimeField(null=True,blank=True)
 
 
 class Dummy(models.Model):

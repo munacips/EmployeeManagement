@@ -1,0 +1,5 @@
+Personal finance tracker(data visualization)
+real time chat app (web sockets)
+redis-codecrafters
+algorithm visualiser
+http server
