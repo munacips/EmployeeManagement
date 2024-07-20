@@ -37,3 +37,8 @@ class ReportSerializer(ModelSerializer):
     class Meta:
         model = Report
         fields = '__all__'
+
+class LeaveSerializers(ModelSerializer):
+    class Meta:
+        model = LeaveApplication
+        fields = '__all__'

@@ -261,4 +261,23 @@ def reports(request):
     reports = Report.objects.all()
     serializer = ReportSerializer(reports,many=True)
     return Response(serializer.data)
-    
+
+@api_view(['GET'])    
+def up_leaves(request):
+    leaves = LeaveApplication.objects.filter(granted=True)
+    serializer = LeaveSerializer(leaves,many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+def pending_leaves(request):
+    leaves = LeaveApplication.objects.filter(granted=False)
+    serializer = LeaveSerializer(leaves,many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+def approve(request,id):
+    application = LeaveApplication.objects.get(id=id)
+    application.granted = True
+    application.save
+    serializer = LeaveSerializer(application)
+    return Response(serializer.data)

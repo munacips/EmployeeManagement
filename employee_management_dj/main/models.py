@@ -17,6 +17,9 @@ class LeaveApplication(models.Model):
 
     def __str__(self):
         return self.employee.username
+    
+    class Meta:
+        ordering =['-leave_date']
 
 
 class EmployeeNotification(models.Model): #works as a reminder too
