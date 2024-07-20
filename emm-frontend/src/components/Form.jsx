@@ -1,11 +1,20 @@
 import axios from 'axios'
-import React, {useState} from 'react'
+import React, {useContext, useState} from 'react'
+import { UserContext } from '../App'
+import { useNavigate } from 'react-router-dom'
 
 function Form() {
 
     const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
     const [message, setMessage] = useState("Login")
+    const {userId, setUserId} = useContext(UserContext)
+    const navigate = useNavigate()
+
+    const handleClick = () => {
+        navigate("/dashboard")
+    }
+
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -18,7 +27,9 @@ function Form() {
             .then(response =>{
                 setUsername("");
                 setPassword("");
+                setUserId(response.data)
                 setMessage("User logged in successfully");
+                handleClick()
             })
             .catch(error => {
                 setMessage(error.message);

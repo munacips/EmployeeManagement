@@ -10,10 +10,17 @@ import AddSale from './components/AddSale';
 import Checkout from './components/Checkout';
 import Reports from './components/Reports';
 import CreateReport from './components/CreateReport';
+import LeaveApplication from './components/LeaveApplication';
+import MyDetails from './components/MyDetails';
+import Form from './components/Form';
+import LeaveSchedule from './components/LeaveSchedule';
+
+export const UserContext = React.createContext(null)
 
 function App() {
 
   // const [employees, setEmployees] = useState([]);
+  const [userId, setUserId] = useState("")
 
   // useEffect(() => {
   //   axios.get('http://localhost:800/employees/')
@@ -28,15 +35,21 @@ function App() {
   return (
     <Router>
       <Navbar/>
-      <Routes>
-        <Route exact path='/' element={<Login />}></Route>
-        <Route exact path='/dashboard' element={<Dashboard/>}></Route>
-        <Route exact path='/add_duty' element={<AddDuty/>}></Route>
-        <Route exact path='/add_sale' element={<AddSale/>} ></Route>
-        <Route exact path='/checkout' element={<Checkout/>}></Route>
-        <Route exact path='/reports' element={<Reports/>}></Route>
-        <Route exact path='/create_report' element={<CreateReport/>}></Route>
-      </Routes>
+      <UserContext.Provider value={{userId : userId, setUserId : setUserId}}>
+        <Routes>
+            <Route exact path='/' element={<Login />}></Route>
+            <Route exact path='/dashboard' element={<Dashboard/>}></Route>
+            <Route exact path='/add_duty' element={<AddDuty/>}></Route>
+            <Route exact path='/add_sale' element={<AddSale/>} ></Route>
+            <Route exact path='/checkout' element={<Checkout/>}></Route>
+            <Route exact path='/reports' element={<Reports/>}></Route>
+            <Route exact path='/login_form' element={<Form/>}/>
+            <Route exact path='/create_report' element={<CreateReport/>}></Route>
+            <Route exact path='/apply_leave' element={<LeaveApplication/>}></Route>
+            <Route exact path='/my_details' element={<MyDetails/>}></Route>
+            <Route exac path='/leave_schedule' element={<LeaveSchedule/>} />
+        </Routes>
+      </UserContext.Provider>
     </Router>
   );
 }

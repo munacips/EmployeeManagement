@@ -9,9 +9,9 @@ function Dashboard() {
         <h1>Dashboard</h1>
         <MyButton value="Record Duty" route={'/add_duty'}/>
         <MyButton value="Record Sale" route={'/add_sale'}/>
-        <MyButton value="Checkout" route={'/checkout'}/>
         <MyButton value="Apply leave" route={'/apply_leave'}></MyButton>
-        <MyButton value="My Details" router={''}></MyButton>
+        <MyButton value="My Details" route={'/my_details'}></MyButton>
+        <MyButton value="Checkout" route={'/checkout'}/>
     </div>
   )
 }

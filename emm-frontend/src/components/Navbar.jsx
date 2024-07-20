@@ -5,6 +5,7 @@ function Navbar({userId}) {
     <nav style={styling}>
         <li style={listItem}><a style={link} href="/dashboard">Dashboard</a></li>
         <li style={listItem}><a style={link} href="/reports">Reports</a></li>
+        <li style={listItem}><a style={link} href="/leave_schedule">Leave shcedules</a></li>
         {()=>{
           if (userId!==0) {
             return <li>{userId}</li>
