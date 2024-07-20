@@ -38,9 +38,11 @@ function CreateReport() {
         <h2>{message}</h2>
         <form onSubmit={handleSubmit} style={styling}>
         <input type="hidden" name="csrfmiddlewaretoken" value={csrftoken}/>
-            <input type="number" name="userId" id="userId" value={userId} onChange={(e)=>{setUserId(e.target.value)}} /> <br />
-            <input type="date" name="date_from" id="date_to" value={date_from} onChange={(e)=>{setDateFrom(e.target.value)}} /> <br />
-            <input type="date" name="date_to" id="date_to" value={date_to} onChange={(e)=>{setDateTo(e.target.value)}} /> <br />
+            <input type="number" name="userId" id="userId" value={userId} onChange={(e)=>{setUserId(e.target.value)}} placeholder='User Id'/> <br />
+          
+            <input type="date" name="date_from" id="date_to" value={date_from} onChange={(e)=>{setDateFrom(e.target.value)}} placeholder='Date From' /> <br />
+           
+            <input type="date" name="date_to" id="date_to" value={date_to} onChange={(e)=>{setDateTo(e.target.value)}} placeholder='Date to'/> <br />
             <button type="submit">Create</button>
         </form>
     </div>

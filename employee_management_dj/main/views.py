@@ -152,7 +152,7 @@ def checkout(request):
     print("the record : ",records)
     record = records.last()
     record.check_out_time = datetime.datetime.now().time()
-    employee.total_time += ( record.check_out_time - record.check_in_time)
+    employee.total_time += ( datetime.datetime.combine(record.date,record.check_out_time) - datetime.datetime.combine(record.date,record.check_in_time))
     record.save()
     logout(request)
     return Response(status.HTTP_204_NO_CONTENT)
@@ -221,12 +221,12 @@ def create_report(request):
     f.write("\n")
     f.write("DUTIES DONE \n")
     for duty in duties:
-        f.write(duty + "\n")
+        f.write(str(duty) + "\n")
         f.write("_____\n")
     f.write("SALES DONE\n")
     print(sales)
     for sale in sales:
-        f.write(sale+"\n")
+        f.write(str(sale)+"\n")
     total_time = timedelta(0)
     for record in records.iterator():
         if record.check_out_time == None:
