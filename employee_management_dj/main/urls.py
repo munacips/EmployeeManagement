@@ -15,7 +15,8 @@ urlpatterns = [
     path('info/',views.user_info,name="userinfo"),
     path('add_sale/',views.add_sale,name="add_sale"),
     path('create_report/',views.create_report,name="create_report"),
-    path('reports/',views.reports,name="reports")
+    path('reports/',views.reports,name="reports"),
+    path('apply_leave/',views.apply_leave,name="apply_leave")
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL , document_root=settings.STATIC_ROOT)

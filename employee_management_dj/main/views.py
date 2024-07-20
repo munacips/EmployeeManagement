@@ -11,6 +11,7 @@ from django.contrib.auth.hashers import make_password
 from django.core.files import File
 import schedule
 import datetime
+import time
 from datetime import timedelta
 
 import json
@@ -135,7 +136,7 @@ def checkin(request):
         if user is not None:
             login(request , user)
             record, created = DailyRecords.objects.get_or_create(employee=employee,check_in_time = datetime.datetime.now())
-            return Response(status=status.HTTP_200_OK)
+            return Response(employee.id,status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_404_NOT_FOUND)
     elif request.method == 'GET':
@@ -200,36 +201,60 @@ def user_info(request):
 @api_view(['POST'])
 def create_report(request):
     data = json.loads(request.body.decode('utf8').replace("'", '"'))
-    id = data["id"]
+    print("The data : " + str(request.body) + '')
+    id = data["userId"]
     date_from = data["date_from"]
     date_to = data["date_to"]
     employee = Employee.objects.get(id=id)
+    print("The employee ", employee)
     records = DailyRecords.objects.filter(employee=employee)
     records = records.filter(date__range=[str(date_from),str(date_to)])
     duties = Duty.objects.filter(employee=employee)
     duties = duties.filter(date__range=[str(date_from),str(date_to)])
     sales = Sale.objects.filter(employee=employee)
     sales = sales.filter(date__range=[str(date_from),str(date_to)])
-    with open('file_{0}.txt'.format(datetime.datetime.now()),'w') as f:
-        f.write(f"Report for {employee.username}")
-        f.write(" ")
-        f.write("DUTIES DONE")
-        for duty in duties.iterator():
-            f.write(duty)
-            f.write("_____")
-        f.write("SALES DONE")
-        for sale in sales.iterator():
-            f.write(sale)
-        total_time = 0
-        # for record in records.iterator():
-        #     total_time += ()
-        # f.write("Total time at work: " + )
-        my_file = File(f)
-        new_report, created = Report.objects.get_or_create(employee=employee,file=my_file,date_from=date_from,date_to=date_to)
-        if created:
-            return Response(my_file,status=status.HTTP_200_OK)
+    new_report, created = Report.objects.get_or_create(employee=employee,date_from=date_from,date_to=date_to)
+    f = open('file_{0}.txt'.format(new_report.id),'a+')
+    f.truncate(0)
+    f.write(f"Report for {employee.username} \n")
+    f.write(f"Leave days left : {employee.leave_days} \n")
+    f.write("\n")
+    f.write("DUTIES DONE \n")
+    for duty in duties:
+        f.write(duty + "\n")
+        f.write("_____\n")
+    f.write("SALES DONE\n")
+    print(sales)
+    for sale in sales:
+        f.write(sale+"\n")
+    total_time = timedelta(0)
+    for record in records.iterator():
+        if record.check_out_time == None:
+            total_time += (datetime.datetime.combine(record.date,datetime.time(23,0,0,tzinfo=None)) - datetime.datetime.combine(record.date,record.check_in_time))
         else:
-            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            total_time += (record.check_out_time - record.check_in_time)
+    f.write("_____\n")
+    f.write("Total time at work: " + str(total_time)+ "\n")
+    my_file = File(f)
+    new_report.file = my_file
+    new_report.save()
+    return Response(my_file,status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+def apply_leave(request):
+    data = json.loads(request.body.decode('utf8').replace("'", '"'))
+    id = data['userId']
+    days = data['days']
+    leave_date = data['leave_date']
+    return_date = datetime.datetime.strptime(leave_date,"%Y-%m-%d") + timedelta(int(days))
+    employee = Employee.objects.get(id=id)
+    if employee.on_leave:
+        return Response("Alrealdy on leave",status=status.HTTP_406_NOT_ACCEPTABLE)
+    elif employee.leave_days < int(days) :
+        return Response("Not enough days left",status=status.HTTP_406_NOT_ACCEPTABLE)
+    else:
+        new_application, create = LeaveApplication.objects.get_or_create(employee=employee,leave_date=leave_date,return_date=return_date)
+        return Response("Application sent, now waiting for approval",status=status.HTTP_201_CREATED)
         
 @api_view(['GET'])   
 def reports(request):

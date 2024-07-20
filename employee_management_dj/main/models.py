@@ -6,7 +6,7 @@ class Employee(User):
     on_leave = models.BooleanField(default=False)
     role = models.CharField(max_length=100)
     is_manager = models.BooleanField(default=False)
-    total_time = models.IntegerField(default=0)
+    total_time = models.DurationField(default=0)
 
 
 class LeaveApplication(models.Model):
@@ -14,6 +14,9 @@ class LeaveApplication(models.Model):
     leave_date = models.DateField()
     return_date = models.DateField()
     granted = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.employee.username
 
 
 class EmployeeNotification(models.Model): #works as a reminder too
@@ -56,7 +59,7 @@ class Duty(models.Model):
 
 class Report(models.Model):
     employee = models.ForeignKey(Employee,on_delete=models.DO_NOTHING)
-    file = models.FileField(upload_to='reports')
+    file = models.FileField(upload_to='reports',null=True)
     date_from = models.DateField()
     date_to = models.DateField()
 
